@@ -286,24 +286,29 @@ class ApiClient {
   }
 
   Future<Options> _getOptions({
-    required APIType apiType,
-    TokenType? tokenType,
-    Map<String, dynamic>? extraHeaders,
-  }) async {
-    final baseOptions = switch (apiType) {
-      APIType.public => PublicApiOptions().options,
-      APIType.private => await ProtectedApiOptions(
-        cacheService: _cacheService,
-        tokenType: tokenType,
-      ).options,
-    };
+  required APIType apiType,
+  TokenType? tokenType,
+  Map<String, dynamic>? extraHeaders,
+}) async {
+  Options baseOptions;
 
-    if (extraHeaders != null) {
-      baseOptions.headers?.addAll(extraHeaders);
-    }
-
-    return baseOptions;
+  if (apiType == APIType.public) {
+    baseOptions = PublicApiOptions().options;
+  } else if (apiType == APIType.private) {
+    baseOptions = await ProtectedApiOptions(
+      cacheService: _cacheService,
+      tokenType: tokenType,
+    ).options;
+  } else {
+    throw Exception("Unknown API Type");
   }
+
+  if (extraHeaders != null) {
+    baseOptions.headers?.addAll(extraHeaders);
+  }
+
+  return baseOptions;
+}
 
   ApiResponse<T> _handleDioException<T>(DioException e) {
     // Log.error('DioExceptionType → ${e.type}');
